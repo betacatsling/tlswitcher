@@ -4,7 +4,7 @@
   "title": "TLSwitcher",
   "description": "Switch Typeless accounts and inspect subscription or quota usage from Raycast.",
   "icon": "icon.png",
-  "author": "thomas",
+  "author": "beta_cat09",
   "license": "MIT",
   "version": "0.1.0",
   "platforms": [
