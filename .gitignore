@@ -1,0 +1,19 @@
+node_modules/
+build/
+
+.DS_Store
+.env
+.env.*
+
+.raycast-dev.log
+.raycast-dev.pid
+
+# Local Typeless account snapshots and runtime data must never be committed.
+.typeless-switcher/
+Typeless/
+now.typeless.desktop/
+app-storage.json
+user-data.json
+Cookies*
+device.cache
+
