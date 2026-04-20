@@ -45,6 +45,8 @@ const RSYNC_BIN = "/usr/bin/rsync";
 const OPEN_BIN = "/usr/bin/open";
 const OSASCRIPT_BIN = "/usr/bin/osascript";
 const PGREP_BIN = "/usr/bin/pgrep";
+const ACTIVE_REFRESH_TIMEOUT_MS = 3500;
+const ACTIVE_REFRESH_POLL_MS = 500;
 
 const RSYNC_ARGS = [
   "--archive",
@@ -276,6 +278,40 @@ async function getFileTimestamp(
     return stats.mtime.toLocaleString();
   } catch {
     return undefined;
+  }
+}
+
+async function getFileMtimeMs(targetPath: string): Promise<number | undefined> {
+  try {
+    const stats = await fs.stat(targetPath);
+    return stats.mtimeMs;
+  } catch {
+    return undefined;
+  }
+}
+
+async function refreshActiveAccountCache(): Promise<void> {
+  if (!(await exists(ACTIVE_STORAGE_FILE))) {
+    return;
+  }
+
+  const previousMtime = await getFileMtimeMs(ACTIVE_STORAGE_FILE);
+  await execFileAsync(OPEN_BIN, ["-g", "-j", "-a", APP_NAME]).catch(
+    () => undefined,
+  );
+
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < ACTIVE_REFRESH_TIMEOUT_MS) {
+    await sleep(ACTIVE_REFRESH_POLL_MS);
+
+    const nextMtime = await getFileMtimeMs(ACTIVE_STORAGE_FILE);
+    if (
+      nextMtime !== undefined &&
+      previousMtime !== undefined &&
+      nextMtime > previousMtime
+    ) {
+      return;
+    }
   }
 }
 
@@ -832,6 +868,7 @@ export default function Command() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
+      await refreshActiveAccountCache();
       const nextModel = await loadModel();
       setModel(nextModel);
       setErrorMessage(undefined);
