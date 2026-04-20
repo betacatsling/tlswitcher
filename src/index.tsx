@@ -868,7 +868,6 @@ export default function Command() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      await refreshActiveAccountCache();
       const nextModel = await loadModel();
       setModel(nextModel);
       setErrorMessage(undefined);
@@ -905,6 +904,13 @@ export default function Command() {
     },
     [load],
   );
+
+  const handleLiveRefresh = useCallback(async () => {
+    await runWithToast("Refreshing live Typeless usage", async () => {
+      await refreshActiveAccountCache();
+    });
+    await load();
+  }, [load]);
 
   const handleStartAddAccount = useCallback(async () => {
     const confirmed = await confirmAlert({
@@ -995,6 +1001,10 @@ export default function Command() {
                     title="Add Another Account"
                     onAction={handleStartAddAccount}
                   />
+                  <Action
+                    title="Refresh Live Usage"
+                    onAction={handleLiveRefresh}
+                  />
                   <Action title="Reload" onAction={load} />
                   <Action
                     title="Open Typeless"
@@ -1052,6 +1062,10 @@ export default function Command() {
                       title="Add Another Account"
                       onAction={handleStartAddAccount}
                     />
+                    <Action
+                      title="Refresh Live Usage"
+                      onAction={handleLiveRefresh}
+                    />
                     <Action title="Reload" onAction={load} />
                   </ActionPanel.Section>
                   <ActionPanel.Section>
@@ -1087,6 +1101,12 @@ export default function Command() {
                   <Action
                     title="Add Another Account"
                     onAction={handleStartAddAccount}
+                  />
+                ) : null}
+                {currentAccount ? (
+                  <Action
+                    title="Refresh Live Usage"
+                    onAction={handleLiveRefresh}
                   />
                 ) : null}
                 <Action title="Reload" onAction={load} />
